@@ -1,6 +1,17 @@
 # SPX_VIX
 ## Investigating the time series relationship between SPX and VIX with Robinhood popularity data
 
+#### Visuals
+ARIMA model comparison w/ Robinhood data used as a regressor
+![alt text](https://github.com/scelmore1/SPX_VIX/blob/main/images/ARIMA%20model%20comps.png?raw=true)
+
+LM comparison w/ Robinhood data used as a variable
+![alt text](https://github.com/scelmore1/SPX_VIX/blob/main/images/SPX%20VIX%20Robinhood%20LM.png?raw=true)
+
+VIX and SPX volatility overlay
+![alt text](https://github.com/scelmore1/SPX_VIX/blob/main/images/VIX%20SPX%20vol%20overlay.png?raw=true)
+
+#### Summary
 <p>I started this project interested in the SPX, VIX relationship and why was it that VIX was the ‘fear indicator’ of the market. In the EDA phase, I started exploring this relationship by charting the SPX against the VIX. Using python pandas, I created some extra columns in the dataframe for measuring the correlation between the two. These charts led to an interesting question of why the correlation between the two, which is usually strongly negative (i.e. close to -1), would sometimes spike positively, which was prevalent in this year. I hypothesized that this year where the options market saw a heavy increase of ‘retail’ money has influenced the VIX and thus the relationship between the SPX and VIX. I was able to find a good proxy representing a measure of ‘retail’ money by using Robinhood’s number of unique users owning a particular stock. This data was available thanks to robintrack.net, which did the work of scraping the Robinhood API hourly for the number of users owning each stock listed on the platform.</p>
 <p>Getting this Robinhood data into something I could use was another challenge, as the data was originally separated by each stock, and contained hourly data, but I needed daily. I wrote a function in python that would create a pandas dataframe from joining each of the stocks but would only keep the top 50 stocks as measured by the number of users at the last data point. This function also only kept the max number of users from each day, which created a daily interval set. The dataset was consolidated into a more concise version by measuring the log returns of number of users in each of those top 50 stocks from day to day and averaging that across the dataframe. Thus, we had an appropriate measure of how unique Robinhood users were buying and selling on their platform and created a good proxy of inflows and outflows of retail money into the market.</p>
 <p>Armed with this dataset that included the SPX price, VIX index, and log returns of unique Robinhood users, I went about investigating their relationship in R. I knew the VIX would be more closely correlated with the volatility of the log returns of SPX than the SPX itself, because of the nature of what the VIX is trying to index. So, I fit a GARCH(1,1) model to the ln returns of the SPX, which also applied an ARMA(0,2) model. A second order MA term reduced the autocorrelation effects of the ln returns. Now I could use the garch fit to create a volatility time series by taking the @sigma.t from the garch model. The correlation between this SPX ln return volatility series and VIX was high at .91 and didn’t contain any lagged cross correlation. The time series object containing the SPX volatility, VIX, and Robinhood users was condensed to only contain the dates that occurred after Jan 1, 2020 due to the nature of the hypothesis questioning the market effects of this calendar year.</p>
